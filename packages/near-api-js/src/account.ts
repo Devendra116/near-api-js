@@ -632,11 +632,11 @@ export class Account {
     }
 
     createTransaction(recevier: Account | string): Transaction {
-      return new Transaction(this, recevier);
+        return new Transaction(this, recevier);
     }
 
     async hasDeployedContract(): Promise<boolean> {
-      return (await this.state()).code_hash !== EMPTY_CONTRACT_HASH; 
+        return (await this.state()).code_hash !== EMPTY_CONTRACT_HASH;
     }
 }
 
@@ -645,87 +645,86 @@ export class Account {
  * Transaction Builder class. Initialized to an account that will sign the final transaction
  */
 export class Transaction {
-  readonly receiverId: string;
-  readonly actions: Action[] = [];
-  private accountToBeCreated = false;
-  private _transferAmount?: BN;
+    readonly receiverId: string;
+    readonly actions: Action[] = [];
+    private accountToBeCreated = false;
+    private _transferAmount?: BN;
 
-  constructor(private signer: Account, receiver: Account | string) {
-    this.receiverId = typeof receiver === 'string' ? receiver : receiver.accountId;
-  }
+    constructor(private signer: Account, receiver: Account | string) {
+        this.receiverId = typeof receiver === 'string' ? receiver : receiver.accountId;
+    }
 
-  addKey(publicKey: string | PublicKey, accessKey: AccessKey = fullAccessKey()): this {
-    this.actions.push(addKey(PublicKey.from(publicKey), accessKey));
-    return this;
-  }
+    addKey(publicKey: string | PublicKey, accessKey: AccessKey = fullAccessKey()): this {
+        this.actions.push(addKey(PublicKey.from(publicKey), accessKey));
+        return this;
+    }
 
-  createAccount(): this {
-    this.accountToBeCreated = true;
-    this.actions.push(createAccount());
-    return this;
-  }
+    createAccount(): this {
+        this.accountToBeCreated = true;
+        this.actions.push(createAccount());
+        return this;
+    }
 
-  deleteAccount(beneficiaryId: string): this {
-    this.actions.push(deleteAccount(beneficiaryId));
-    return this;
-  }
+    deleteAccount(beneficiaryId: string): this {
+        this.actions.push(deleteAccount(beneficiaryId));
+        return this;
+    }
 
-  deleteKey(publicKey: string | PublicKey): this {
-    this.actions.push(deleteKey(PublicKey.from(publicKey)));
-    return this;
-  }
+    deleteKey(publicKey: string | PublicKey): this {
+        this.actions.push(deleteKey(PublicKey.from(publicKey)));
+        return this;
+    }
 
-  deployContract(code: Uint8Array | Buffer): this {
-    this.actions.push(deployContract(code));
-    return this;
-  }
+    deployContract(code: Uint8Array | Buffer): this {
+        this.actions.push(deployContract(code));
+        return this;
+    }
 
-  functionCall(
-    methodName: string,
-    args: Record<string, unknown> | Uint8Array,
-    {
-      gas = DEFAULT_FUNCTION_CALL_GAS,
-      attachedDeposit = ZERO_NEAR,
-    }: {gas?: BN; attachedDeposit?: BN} = {},
-  ): this {
-    this.actions.push(
-      functionCall(methodName, args, gas, attachedDeposit),
-    );
-    return this;
-  }
+    functionCall(
+        methodName: string,
+        args: Record<string, unknown> | Uint8Array,
+        {
+            gas = DEFAULT_FUNCTION_CALL_GAS,
+            attachedDeposit = ZERO_NEAR,
+        }: { gas?: BN; attachedDeposit?: BN } = {},
+    ): this {
+        this.actions.push(
+            functionCall(methodName, args, gas, attachedDeposit),
+        );
+        return this;
+    }
 
-  stake(amount: BN, publicKey: PublicKey | string): this {
-    this.actions.push(stake(amount, PublicKey.from(publicKey)));
-    return this;
-  }
+    stake(amount: BN, publicKey: PublicKey | string): this {
+        this.actions.push(stake(amount, PublicKey.from(publicKey)));
+        return this;
+    }
 
-  transfer(amount: BN): this {
-    this._transferAmount = amount;
-    this.actions.push(transfer(this._transferAmount));
-    return this;
-  }
+    transfer(amount: BN): this {
+        this._transferAmount = amount;
+        this.actions.push(transfer(this._transferAmount));
+        return this;
+    }
 
-  push(action: Action): this {
-    this.actions.push(action);
-    return this;
-  }
+    push(action: Action): this {
+        this.actions.push(action);
+        return this;
+    }
 
-  get accountCreated(): boolean {
-    return this.accountToBeCreated;
-  }
+    get accountCreated(): boolean {
+        return this.accountToBeCreated;
+    }
 
-  get transferAmount(): BN {
-    return this._transferAmount ?? ZERO_NEAR;
-  }
+    get transferAmount(): BN {
+        return this._transferAmount ?? ZERO_NEAR;
+    }
 
-  signAndSend(): Promise<FinalExecutionOutcome> {
-    //@ts-expect-error is protected
-    return this.signer.signAndSendTransaction({receiverId: this.receiverId, actions: this.actions})
-  }
+    signAndSend(): Promise<FinalExecutionOutcome> {
+        //@ts-expect-error is protected
+        return this.signer.signAndSendTransaction({ receiverId: this.receiverId, actions: this.actions });
+    }
 
-  sign(): Promise<[Uint8Array, SignedTransaction]> {
-    //@ts-expect-error is protected
-    return this.signer.signTransaction(this.receiverId, this.actions);
-  }
+    sign(): Promise<[Uint8Array, SignedTransaction]> {
+        //@ts-expect-error is protected
+        return this.signer.signTransaction(this.receiverId, this.actions);
+    }
 }
-
